@@ -3,9 +3,7 @@ import beans.Student;
 import config.ProjectConfig;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-//in this example we will understand, how we to add relationships among beans when using @Bean annotaions
-//go to ProjectConfig class to understand more.
-
+//in this example we will understand, how we to add relationships among beans when using stereotypes which is more modern
 public class Main {
     public static void main(String[] args) {
 

@@ -1,9 +1,11 @@
 package beans;
 
-//we are defining two beans student and book, with student has book relationship
-//we are going to see how we can link two beans when using @Bean annotation.
+
+import org.springframework.stereotype.Component;
+
+@Component
 public class Book {
-    private String name;
+    private String name = "Algorithms";
 
     public String getName() {
         return name;
