@@ -1,52 +1,50 @@
-# Spring Bean Configuration Example
+# Spring Field Injection vs Constructor Injection Example
 
-This project demonstrates how to link two beans in a Spring application using the `@Bean` annotation. It showcases two methods: one using a direct `@Bean` method and another using method injection.
+This project demonstrates the difference between field injection and constructor injection in a Spring application, using the `@Autowired` annotation for field injection and constructor injection for dependency injection.
 
 ## Project Structure
 
 ### beans package:
 
 - **Student:** Represents a simple `Student` class.
-- **Book:** Represents a simple `Book` class with a name property.
 
-### configuration package:
+### Main class:
 
-- **ProjectConfig:** Configuration class annotated with `@Configuration`. It defines two beans - `Student` and `Book` - and demonstrates how to link them.
+- **Main:** Entry point for the application. It demonstrates the usage of `Student` class with both field and constructor injection.
 
 ## Understanding the Code
 
-### `ProjectConfig` Class
+### `Student` Class
 
 ```java
-@Configuration
-public class ProjectConfig {
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-    // Method 1: Direct @Bean method
-    // Uncomment the following lines to use this method
+@Component
+public class Student {
+
+    // Field Injection (Uncomment the following lines to use field injection)
     /*
-    @Bean
-    public Student student(){
-        Student student = new Student();
-        // Spring recognizes that there is already one bean of type Book, so it will inject that.
-        student.setBook(book());
-        return student;
-    }
+    @Autowired
+    private Book book;
     */
 
-    // Method 2: @Bean method with method injection
-    @Bean
-    public Student student(Book book){
-        // This method is annotated with @Bean, and Spring will automatically inject the Book bean.
-        Student student = new Student();
-        student.setBook(book);
-        return student;
+    // Constructor Injection (Recommended)
+    private final Book book;
+
+    @Autowired
+    public Student(Book book){
+        this.book = book;
     }
 
-    @Bean
-    public Book book(){
-        // This method creates a Book bean with the name "Algorithms."
-        Book book = new Book();
-        book.setName("Algorithms");
+    public Book getBook() {
         return book;
+    }
+
+    @Override
+    public String toString() {
+        return "Student{" +
+                "book=" + book +
+                '}';
     }
 }
