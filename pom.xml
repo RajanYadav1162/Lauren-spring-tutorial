@@ -10,24 +10,29 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context</artifactId>
-      <version>6.0.11</version>
+      <version>5.1.7.RELEASE</version>
     </dependency>
+
     <dependency>
-      <groupId>springframework</groupId>
+      <groupId>org.springframework</groupId>
       <artifactId>spring-jdbc</artifactId>
-      <version>1.2.6</version>
+      <version>5.1.7.RELEASE</version>
     </dependency>
-    <dependency>
-      <groupId>mysql</groupId>
-      <artifactId>mysql-connector-java</artifactId>
-      <version>8.0.33</version>
-    </dependency>
+
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-tx</artifactId>
-      <version>6.0.11</version>
+      <version>5.1.7.RELEASE</version>
     </dependency>
+
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>8.0.16</version>
+    </dependency>
+
   </dependencies>
+
   <build>
     <plugins>
       <plugin>

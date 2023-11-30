@@ -10,7 +10,7 @@ public class App {
       var productService = context.getBean(ProductService.class);
 
       Product product = new Product();
-      product.setName("Apple");
+      product.setName("Banana");
 
       productService.addOneProduct(product);
     }

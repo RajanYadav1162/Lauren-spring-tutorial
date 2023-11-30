@@ -3,23 +3,26 @@ package services;
 import model.Product;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import repositories.ProductRepository;
 
 @Service
 public class ProductService {
-
-
   @Autowired
   ProductRepository productRepository;
 
-  @Transactional
-  //now since this method is wrap around transactional, spring will do the rollback when there is runtime exception
-  //carefull with different rules, like rollback will not done for checked exception
-  //even rollbacks are not done for runtime if we handle the exception right in method,
-  //internally @Around aspect is happening, so if exceptions will not be able to propagate, then there will be no rollback.
-  public void addOneProduct(Product product){
-    productRepository.addProduct(product);
-    throw new RuntimeException("run time exception");
+
+  //this is the default behaviour, so we add start transaction at start of method, and in end end of transaction,
+  //so if there any runtime exception all the inserts will rollback.
+  @Transactional(propagation = Propagation.REQUIRED)
+   public void addOneProduct(Product products){
+   for(int i = 1; i<=10; i++){
+     var product = new Product();
+     product.setName("product "+ i);
+     productRepository.addProduct(product);
+
+     if(i == 5) throw new RuntimeException("my exception to rollback all the inserted data");
+   }
   }
 }
