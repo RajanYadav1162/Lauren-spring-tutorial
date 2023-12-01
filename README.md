@@ -1,106 +1,49 @@
-# Spring Transaction Propagation
+# Isolation Levels in Spring Transactions
 
-## Overview
-This document provides a comprehensive understanding of Spring transaction propagation levels in a simple application. The project utilizes essential dependencies, including `spring-context`, `spring-jdbc`, `spring-txn`, and `mysql-connector-java`.
+## 5 Different Types of Isolation Levels
 
-## Propagation Levels
+1. **DEFAULT**: The isolation level is dependent on the configuration at the database or datasource level. It uses the default isolation level provided by the underlying data source.
 
-1. **REQUIRED**
-    - **Example:**
-      ```java
-      @Transactional(propagation = Propagation.REQUIRED)
-      public void methodA() {
-         // Transaction created
-         methodB();
-      }
-      ```
-    - **Explanation:**
-        - Default behavior.
-        - Creates a new transaction if none exists; otherwise, uses the existing one.
+2. **READ_UNCOMMITTED**: This isolation level allows transactions to read uncommitted changes made by other transactions. It poses a risk of dirty reads, where a transaction might read data that another transaction has modified but not yet committed.
 
-2. **REQUIRES_NEW**
-    - **Example:**
-      ```java
-      @Transactional(propagation = Propagation.REQUIRED)
-      public void addOneProduct(Product products) {
-         for(int i = 1; i <= 10; i++) {
-            var product = new Product();
-            product.setName("product " + i);
-            
-            // Each addProduct call creates a new transaction.
-            productRepository.addProduct(product);
- 
-            if(i == 5) throw new RuntimeException("Exception to rollback inserted data");
-         }
-      }
- 
-      @Transactional(propagation = Propagation.REQUIRES_NEW)
-      public void addProduct(Product product) {
-         String sql = "INSERT INTO product VALUES(NULL, ?)";
-         jdbcTemplate.update(sql, product.getName());
-      }
-      ```
-    - **Explanation:**
-        - Creates a new transaction, regardless of the existing one.
-        - Changes committed in the nested method won't roll back if an exception occurs.
+3. **READ_COMMITTED**: Transactions at this level ensure that dirty reads do not occur. However, it still allows for repeatable reads, where a transaction may see different values for the same record in different parts of the same transaction timeline.
 
-3. **MANDATORY**
-    - **Example:**
-      ```java
-      @Transactional(propagation = Propagation.MANDATORY)
-      public void methodB() {
-         // Uses the existing transaction; throws an exception if none exists.
-      }
-      ```
-    - **Explanation:**
-        - Requires an existing transaction in the calling environment; otherwise, throws an exception.
+4. **REPEATABLE_READ**: This isolation level prevents both dirty reads and repeatable reads. It ensures that, within the same transaction, a query executed multiple times will consistently return the same result set.
 
-4. **NOT_SUPPORTED**
-    - **Example:**
-      ```java
-      @Transactional(propagation = Propagation.NOT_SUPPORTED)
-      public void methodA() {
-         methodB();
-      }
-      ```
-    - **Explanation:**
-        - Executes without a transaction.
-        - If method A is transactional, it throws an exception.
+5. **SERIALIZABLE**: The highest isolation level, it ensures complete isolation from other transactions. It prevents dirty reads, repeatable reads, and phantom reads, making it the most robust but potentially less performant option.
 
-5. **NEVER**
-    - **Example:**
-      ```java
-      @Transactional(propagation = Propagation.NEVER)
-      public void methodB() {
-         // Method should not be called within a transactional context.
-      }
-      ```
-    - **Explanation:**
-        - Opposite of MANDATORY; should not be called within a transactional context.
+## Problems with Different Isolation Levels
 
-6. **SUPPORTS**
-    - Propagates the existing transaction if available; otherwise, executes without a transaction.
+### 1. Dirty Reads
 
-7. **NESTED**
-    - Rarely used; executes a transaction within another transaction.
+- **Issue**: Dirty reads occur when one transaction reads data that another transaction has modified but not yet committed.
+- **Example**:
+  T1 ----------10--------------20-------------->20
+  T2------------------20..................R-->10
 
-## Best Practices and Considerations
+- **Explanation**: T1 reads 20 due to READ_UNCOMMITTED, but if T2 rolls back, T1 still sees an incorrect value.
 
-- **Atomicity**: Ensure that each transaction is atomic, and changes are committed only if the entire operation is successful.
+### 2. Repeatable Reads
 
-- **Exception Handling**: Be cautious with exception handling, especially in nested transactions, to avoid unexpected behavior.
+- **Issue**: Even with READ_COMMITTED, repeatable reads can occur, where a transaction sees different values for the same record in the same transaction.
+- **Example**:
+  T1.............10..............20................->
+  T2...................20..C........................-->
 
-- **Transactional Boundaries**: Clearly define transactional boundaries to maintain a consistent state in the database.
+- **Explanation**: T1 consistently reads 20, but within the same timeline, it observes two different values (10 and 20).
 
-- **Rollback Policies**: Understand the implications of rollback policies for different propagation levels.
+### 3. Phantom Read
 
-- **Logging and Monitoring**: Implement logging and monitoring to track transactional behavior and diagnose issues.
+- **Issue**: REPEATABLE_READ prevents dirty and repeatable reads but may lead to phantom reads, where a transaction may see additional records that were inserted by another transaction.
+- **Example**:
+- T1..........100.....................120............->
+- T2.................20 C.............................->
 
-In summary:
-- **REQUIRED**: Creates a new transaction or uses an existing one.
-- **REQUIRES_NEW**: Always creates a new transaction.
-- **MANDATORY**: Uses an existing transaction; throws an exception if none exists.
-- **NEVER**: Should not be called within a transactional context.
-- **NOT_SUPPORTED**: Executes without a transaction.
-- **SUPPORTS**: Propagates the existing transaction if available.
-- **NESTED**: Executes a transaction within another transaction, but rarely used.
+- **Explanation**: T1 initially reads 100 products, but after T2 commits 20 more products, T1, on a subsequent read, sees the additional 20 products.
+
+### Conclusion
+
+- `READ_UNCOMMITTED`: Allows dirty reads.
+- `READ_COMMITTED`: Prevents dirty reads but may have repeatable reads.
+- `REPEATABLE_READ`: Prevents dirty and repeatable reads.
+- `SERIALIZABLE`: Highest isolation level, preventing all problems but reduces overall performance of application

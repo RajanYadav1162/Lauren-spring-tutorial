@@ -1,18 +1,20 @@
 import config.ProjectConfig;
 import model.Product;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import services.ProductService;
+import service.ProductService;
 
-public class App {
+public class App{
 
   public static void main(String[] args) {
     try(var context = new AnnotationConfigApplicationContext(ProjectConfig.class)){
-      var productService = context.getBean(ProductService.class);
 
-      Product product = new Product();
-      product.setName("Banana");
+      ProductService productService = context.getBean(ProductService.class);
 
-      productService.addOneProduct(product);
+      for(int i = 0; i< 11; i++){
+        var p = new Product();
+        p.setName("product "+ i);
+        productService.addOneProduct(p);
+      }
     }
   }
 }
